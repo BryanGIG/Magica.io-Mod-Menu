@@ -9,8 +9,8 @@ android {
 
     defaultConfig {
         applicationId = "com.polarmods"
-        minSdk = 21
-        targetSdk = 32
+        minSdk = 19
+        targetSdk = 30
         multiDexEnabled = false
         versionCode = 1
         versionName = "1.0"
@@ -40,10 +40,4 @@ android {
     kotlinOptions {
         jvmTarget = "1.8"
     }
-}
-
-dependencies {
-    implementation("androidx.core:core-ktx:1.7.0")
-    implementation("androidx.appcompat:appcompat:1.4.1")
-    implementation("com.google.android.material:material:1.5.0")
 }

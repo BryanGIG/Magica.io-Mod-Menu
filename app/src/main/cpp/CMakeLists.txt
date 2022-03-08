@@ -9,44 +9,17 @@ cmake_minimum_required(VERSION 3.10.2)
 
 project("Magica.Mod")
 
-# Creates and names a library, sets it as either STATIC
-# or SHARED, and provides the relative paths to its source code.
-# You can define multiple libraries, and CMake builds them for you.
-# Gradle automatically packages shared libraries with your APK.
-
+set(CMAKE_CXX_STANDARD 17)
+include_directories(Includes)
 add_library( # Sets the name of the library.
-             polarmods
+        polarmods
 
-             # Sets the library as a shared library.
-             SHARED
+        # Sets the library as a shared library.
+        SHARED
 
-             # Provides a relative path to your source file(s).
-             And64InlineHook/And64InlineHook.cpp
-             And64InlineHook/And64InlineHook.hpp
-             KittyMemory/KittyMemory.cpp
-             KittyMemory/KittyMemory.h
-             KittyMemory/KittyUtils.cpp
-             KittyMemory/KittyUtils.h
-             KittyMemory/MemoryBackup.cpp
-             KittyMemory/MemoryBackup.h
-             KittyMemory/MemoryPatch.cpp
-             KittyMemory/MemoryPatch.h
-             Substrate/Buffer.hpp
-             Substrate/CydiaSubstrate.h
-             Substrate/hde64.c
-             Substrate/hde64.h
-             Substrate/SubstrateARM.hpp
-             Substrate/SubstrateDebug.cpp
-             Substrate/SubstrateDebug.hpp
-             Substrate/SubstrateHook.cpp
-             Substrate/SubstrateHook.h
-             Substrate/SubstrateLog.hpp
-             Substrate/SubstratePosixMemory.cpp
-             Substrate/SubstrateX86.hpp
-             Substrate/table64.h
-             utils.h
-             Vector3.hpp
-             main.cpp)
+        Main.cpp
+        Substrate/hde64.c Substrate/SubstrateDebug.cpp Substrate/SubstrateHook.cpp Substrate/SubstratePosixMemory.cpp Substrate/SymbolFinder.cpp
+        Unicode/utf.cpp Unity/API.cpp)
 
 # Searches for a specified prebuilt library and stores the path as a
 # variable. Because CMake includes system libraries in the search path by
@@ -55,19 +28,19 @@ add_library( # Sets the name of the library.
 # completing its build.
 
 find_library( # Sets the name of the path variable.
-              log-lib
+        log-lib
 
-              # Specifies the name of the NDK library that
-              # you want CMake to locate.
-              log )
+        # Specifies the name of the NDK library that
+        # you want CMake to locate.
+        log)
 
 # Specifies libraries CMake should link to your target library. You
 # can link multiple libraries, such as libraries you define in this
 # build script, prebuilt third-party libraries, or system libraries.
 
 target_link_libraries( # Specifies the target library.
-                       polarmods
+        polarmods
 
-                       # Links the target library to the log library
-                       # included in the NDK.
-                       ${log-lib} )
+        # Links the target library to the log library
+        # included in the NDK.
+        ${log-lib})

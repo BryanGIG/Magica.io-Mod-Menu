@@ -28,6 +28,7 @@
 #include <errno.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <Includes/obfuscate.h>
 
 extern "C" void __clear_cache (void *beg, void *end);
 
@@ -44,21 +45,21 @@ struct __SubstrateMemory {
 
 extern "C" SubstrateMemoryRef SubstrateMemoryCreate(SubstrateAllocatorRef allocator, SubstrateProcessRef process, void *data, size_t size) {
     if (allocator != NULL) {
-        MSLog(MSLogLevelError, "MS:Error:allocator != %d", 0);
+        MSLog(MSLogLevelError, OBFUSCATE("MS:Error:allocator != %d"), 0);
         return NULL;
     }
 
     if (size == 0)
         return NULL;
 
-    long page(sysconf(_SC_PAGESIZE)); // Portable applications should employ sysconf(_SC_PAGESIZE) instead of getpagesize
+    int page(getpagesize());
 
     uintptr_t base(reinterpret_cast<uintptr_t>(data) / page * page);
     size_t width(((reinterpret_cast<uintptr_t>(data) + size - 1) / page + 1) * page - base);
     void *address(reinterpret_cast<void *>(base));
 
     if (mprotect(address, width, PROT_READ | PROT_WRITE | PROT_EXEC) == -1) {
-        MSLog(MSLogLevelError, "MS:Error:mprotect() = %d", errno);
+        MSLog(MSLogLevelError, OBFUSCATE("MS:Error:mprotect() = %d"), errno);
         return NULL;
     }
 
@@ -67,7 +68,7 @@ extern "C" SubstrateMemoryRef SubstrateMemoryCreate(SubstrateAllocatorRef alloca
 
 extern "C" void SubstrateMemoryRelease(SubstrateMemoryRef memory) {
     if (mprotect(memory->address_, memory->width_, PROT_READ | PROT_WRITE | PROT_EXEC) == -1)
-        MSLog(MSLogLevelError, "MS:Error:mprotect() = %d", errno);
+        MSLog(MSLogLevelError,  OBFUSCATE("MS:Error:mprotect() = %d"), errno);
 
     __clear_cache(reinterpret_cast<char *>(memory->address_), reinterpret_cast<char *>(memory->address_) + memory->width_);
 

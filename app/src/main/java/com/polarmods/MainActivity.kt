@@ -1,34 +1,37 @@
 package com.polarmods
 
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
-import androidx.appcompat.app.AppCompatActivity
+import android.widget.Toast
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         startFloating(this)
     }
 
     companion object {
         @JvmStatic
         fun startFloating(context: Context) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                if (!Settings.canDrawOverlays(context)) {
-                    val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:${context.packageName}"))
-                    context.startActivity(intent)
-                } else {
-                    val intent = Intent(context, Menu::class.java)
-                    context.startService(intent)
-                }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(context)) {
+                Toast.makeText(
+                    context.applicationContext,
+                    "Restart the game after you allow permission",
+                    Toast.LENGTH_LONG
+                ).show()
+                context.startActivity(
+                    Intent(
+                        "android.settings.action.MANAGE_OVERLAY_PERMISSION",
+                        Uri.parse("package:${context.packageName}")
+                    )
+                )
             } else {
-                val intent = Intent(context, Menu::class.java)
-                context.startService(intent)
+                context.startService(Intent(context, FloatingMod::class.java))
             }
         }
     }
