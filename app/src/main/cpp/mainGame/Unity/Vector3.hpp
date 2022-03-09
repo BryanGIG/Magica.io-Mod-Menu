@@ -82,7 +82,7 @@ struct Vector3
      */
     static inline float Distance(Vector3 a, Vector3 b);
 
-    static inline char ToChar(Vector3 a);
+    static inline std::string ToString(Vector3 a);
 
     /**
      * Returns the dot product of two vectors.
@@ -593,18 +593,8 @@ struct Vector3& Vector3::operator-=(const Vector3 rhs)
     return *this;
 }
 
-char Vector3::ToChar(Vector3 a) {
-    const char* x = (const char*)(int)a.X;
-    const char* y = (const char*)(int)a.Y;
-    const char* z = (const char*)(int)a.Z;
-    char buffer[25];
-    strncpy(buffer, x, sizeof(buffer));
-    strncpy(buffer, ", ", sizeof(buffer));
-    strncpy(buffer, y, sizeof(buffer));
-    strncpy(buffer, ", ", sizeof(buffer));
-    strncpy(buffer, z, sizeof(buffer));
-    strncpy(buffer, ", ", sizeof(buffer));
-    return buffer[24];
+std::string Vector3::ToString(Vector3 a) {
+    return to_string((int) a.X) + ", " + to_string((int) a.Y) + ", " + to_string((int) a.Z);
 }
 
 Vector3 operator-(Vector3 rhs) { return rhs * -1; }

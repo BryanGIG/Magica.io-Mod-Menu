@@ -26,7 +26,7 @@ const char* obfuscated_string = AY_OBFUSCATE("Hello World");
 std::cout << obfuscated_string << std::endl;
 
 ----------------------------------------------------------------------------- */
-
+#define OBFUSCATE_HEADER
 #ifndef AY_OBFUSCATE_DEFAULT_KEY
 // The default 64 bit key to obfuscate strings with.
 // This can be user specified by defining AY_OBFUSCATE_DEFAULT_KEY before
@@ -58,7 +58,7 @@ namespace ay {
 	constexpr void cipher(char *data, size_type size, key_type key) {
 		// Obfuscate with a simple XOR cipher based on key
 		for (size_type i = 0; i < size; i++) {
-			data[i] ^= char(key * 4 >> ((i % 4) * 8));
+			data[i] ^= char(key * 4 >> ((i % 8) * 8));
 		}
 	}
 
@@ -162,7 +162,7 @@ namespace ay {
 // Obfuscates the string 'data' at compile-time and returns a reference to a
 // ay::obfuscated_data object with global lifetime that has functions for
 // decrypting the string and is also implicitly convertable to a char*
-#define OBFUSCATE(data) AY_OBFUSCATE_KEY(data, AY_OBFUSCATE_DEFAULT_KEY)
+#define AY_OBFUSCATE(data) AY_OBFUSCATE_KEY(data, AY_OBFUSCATE_DEFAULT_KEY)
 
 // Obfuscates the string 'data' with 'key' at compile-time and returns a
 // reference to a ay::obfuscated_data object with global lifetime that has
@@ -177,3 +177,5 @@ namespace ay {
         static auto obfuscated_data = ay::obfuscated_data<n, key>(obfuscator); \
         return obfuscated_data; \
     }()
+
+#define OBFUSCATE(data) AY_OBFUSCATE(data)

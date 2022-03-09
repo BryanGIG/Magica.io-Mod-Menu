@@ -1,46 +1,23 @@
-# For more information about using CMake with Android Studio, read the
-# documentation: https://d.android.com/studio/projects/add-native-code.html
-
-# Sets the minimum version of CMake required to build the native library.
-
 cmake_minimum_required(VERSION 3.10.2)
-
-# Declares and names the project.
 
 project("Magica.Mod")
 
+find_library(log-lib log)
+find_package(dobby REQUIRED CONFIG)
+
 set(CMAKE_CXX_STANDARD 17)
+
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    add_definitions(-D_DEBUG)
+endif ()
+
 include_directories(Includes)
-add_library( # Sets the name of the library.
-        polarmods
 
-        # Sets the library as a shared library.
-        SHARED
-
+add_library(polarmods SHARED
         Main.cpp
-        Substrate/hde64.c Substrate/SubstrateDebug.cpp Substrate/SubstrateHook.cpp Substrate/SubstratePosixMemory.cpp Substrate/SymbolFinder.cpp
-        Unicode/utf.cpp Unity/API.cpp)
+        mainGame/Unity/API.cpp
+        mainGame/Camera.cpp
+        mainGame/GameCore.cpp
+        mainGame/Character.cpp)
 
-# Searches for a specified prebuilt library and stores the path as a
-# variable. Because CMake includes system libraries in the search path by
-# default, you only need to specify the name of the public NDK library
-# you want to add. CMake verifies that the library exists before
-# completing its build.
-
-find_library( # Sets the name of the path variable.
-        log-lib
-
-        # Specifies the name of the NDK library that
-        # you want CMake to locate.
-        log)
-
-# Specifies libraries CMake should link to your target library. You
-# can link multiple libraries, such as libraries you define in this
-# build script, prebuilt third-party libraries, or system libraries.
-
-target_link_libraries( # Specifies the target library.
-        polarmods
-
-        # Links the target library to the log library
-        # included in the NDK.
-        ${log-lib})
+target_link_libraries(polarmods ${log-lib} dobby::dobby)

@@ -35,7 +35,7 @@ struct Matrix4x4 {
                      float entry22, float entry23, float entry30, float entry31, float entry32,
                      float entry33);
 
-    Vector3 MultiplyPoint(Vector3 point);
+    inline Vector3 MultiplyPoint(Vector3 point);
 };
 
 Matrix4x4::Matrix4x4() : m00(1.0f), m10(0.0f), m20(0.0f), m30(0.0f),

@@ -1,9 +1,7 @@
-//
-// Created by User on 22/07/2021.
-//
 #include <sys/mman.h>
+#include <dobby.h>
 
-namespace TOOLS {
+namespace Tools {
     #define _SYS_PAGE_SIZE_ (sysconf(_SC_PAGE_SIZE))
     #define _PAGE_START_OF_(x)    ((uintptr_t)x & ~(uintptr_t)(_SYS_PAGE_SIZE_ - 1))
     #define _PAGE_END_OF_(x, len) (_PAGE_START_OF_((uintptr_t)x + len - 1))
@@ -21,7 +19,7 @@ namespace TOOLS {
 
     void HookFunc(void *address, void *replace, void **backup) {
         if (SetProtRWX(address)) {
-            MSHookFunction(address, replace, backup);
+            DobbyHook(address, replace, backup);
         }
     }
 }

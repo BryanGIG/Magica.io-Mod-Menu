@@ -7,16 +7,16 @@
 #include <cstring>
 #include <string>
 #include <vector>
-#include "Unicode/utf.hpp"
 
 using namespace std;
 
 #ifndef API_H
 #define API_H
 
-namespace Il2Cpp
-{
-    int Init(const char *lib = "libil2cpp.so");
+
+namespace Il2Cpp {
+
+    int Init(const char *lib);
 
     int Init(void *handle);
 
@@ -28,6 +28,8 @@ namespace Il2Cpp
 
     void *GetMethodOffset(const char *image, const char *namespaze, const char *clazz, const char *name, int argsCount = 0);
     void *GetMethodOffset(const char *image, const char *namespaze, const char *clazz, const char *name, char **args, int argsCount = 0);
+    const char *GetMethodName(void* method);
+
     size_t GetFieldOffset(const char *image, const char *namespaze, const char *clazz, const char *name);
 
     void GetStaticFieldValue(const char *image, const char *namespaze, const char *clazz, const char *name, void *output);
@@ -49,6 +51,7 @@ namespace Il2Cpp
         auto realOffset = Il2Cpp::GetMethodOffset(image,namespaze,clazz,name,argsCount);
         return (T)((uint8_t*)realOffset);
     }
+
     template <typename T>
     static inline T GetField(void* obj, std::ptrdiff_t Offset) {
         return *(T*)((std::uint8_t*)obj + Offset);
@@ -62,6 +65,7 @@ namespace Il2Cpp
 
     string GetString(void *string);
 
+    uintptr_t GetFieldOffset(void *clazz, const char *name);
 };
 
 

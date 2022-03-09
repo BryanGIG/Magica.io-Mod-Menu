@@ -3,14 +3,21 @@
 //
 
 #include "API.h"
+#include <locale>
+#include <codecvt>
 
-#define IL2CPP__TAG "Il2Cpp"
-
+#ifdef _DEBUG
+#define IL2CPP__TAG "Rewtio"
 #define IL2CPP_LOGI(...) __android_log_print(ANDROID_LOG_INFO,IL2CPP__TAG,__VA_ARGS__)
 #define IL2CPP_LOGD(...) __android_log_print(ANDROID_LOG_DEBUG,IL2CPP__TAG,__VA_ARGS__)
 #define IL2CPP_LOGW(...) __android_log_print(ANDROID_LOG_WARN,IL2CPP__TAG,__VA_ARGS__)
 #define IL2CPP_LOGE(...) __android_log_print(ANDROID_LOG_ERROR,IL2CPP__TAG,__VA_ARGS__)
-
+#else
+#define IL2CPP_LOGD(...)
+#define IL2CPP_LOGW(...)
+#define IL2CPP_LOGE(...)
+#define IL2CPP_LOGI(...)
+#endif
 namespace {
     const void *(*il2cpp_assembly_get_image)(const void *assembly);
 
@@ -27,6 +34,8 @@ namespace {
     void *(*il2cpp_class_get_field_from_name)(void *klass, const char *name);
 
     void *(*il2cpp_class_get_method_from_name)(void *klass, const char *name, int argsCount);
+
+    void *(*il2cpp_runtime_invoke)(void* method, void* obj, void** params, void* exec);
 
     void *(*il2cpp_property_get_get_method)(void *prop);
 
@@ -79,7 +88,7 @@ void *getExportFunction(void *handle, const char *name)
     }
 
     IL2CPP_LOGI("%s: %p %s", __FUNCTION__, handle, name);
-    return 0;
+    return nullptr;
 }
 
 int init(void *handle)
@@ -98,7 +107,9 @@ int init(void *handle)
 
     il2cpp_class_get_field_from_name = (void* (*)(void*, const char *)) getExportFunction(handle, "il2cpp_class_get_field_from_name");;
 
-    il2cpp_class_get_method_from_name = (void* (*)(void *, const char*, int)) getExportFunction(handle, "il2cpp_class_get_method_from_name");;
+    il2cpp_class_get_method_from_name = (void* (*)(void *, const char*, int)) getExportFunction(handle, "il2cpp_class_get_method_from_name");
+
+    il2cpp_runtime_invoke = (void *(*)(void* , void* , void** , void*)) getExportFunction(handle, "il2cpp_runtime_invoke");
 
     il2cpp_property_get_get_method = (void* (*)(void *)) getExportFunction(handle, "il2cpp_property_get_get_method");;
 
@@ -155,7 +166,6 @@ int Il2Cpp::Init(const char *lib) {
 int Il2Cpp::Init(void *handle) {
     if(!handle) return -1;
 
-
     return init(handle);
 
 }
@@ -174,7 +184,7 @@ void *Il2Cpp::GetImageByName(const char *image) {
             return img;
         }
     }
-    return 0;
+    return nullptr;
 }
 // ================================================================================================================ //
 void Il2Cpp::GetStaticFieldValue(const char *image, const char *namespaze, const char *clazz, const char *name, void *output) {
@@ -223,13 +233,13 @@ void *Il2Cpp::GetClassType(const char *image, const char *namespaze, const char 
     void *img = GetImageByName(image);
     if(!img) {
         IL2CPP_LOGI("Can't find image %s!", image);
-        return 0;
+        return nullptr;
     }
 
     void *klass = il2cpp_class_from_name(img, namespaze, clazz);
     if(!klass) {
         IL2CPP_LOGI("Can't find class %s!", clazz);
-        return 0;
+        return nullptr;
     }
     return klass;
 }
@@ -238,20 +248,20 @@ void *Il2Cpp::CreateClassInstance(const char *image, const char *namespaze, cons
     void *img = GetImageByName(image);
     if(!img) {
         IL2CPP_LOGI("Can't find image %s!", image);
-        return 0;
+        return nullptr;
     }
 
     void *klass = GetClassType(image, namespaze, clazz);
     if(!klass) {
         IL2CPP_LOGI("Can't find class %s!", clazz);
-        return 0;
+        return nullptr;
     }
 
     void *obj = il2cpp_object_new(klass);
     if(!obj)
     {
         IL2CPP_LOGI("Can't create object for %s", clazz);
-        return 0;
+        return nullptr;
     }
 
     return obj;
@@ -261,19 +271,19 @@ void *Il2Cpp::GetMethodOffset(const char *image, const char *namespaze, const ch
     void *img = GetImageByName(image);
     if(!img) {
         IL2CPP_LOGI("Can't find image %s!", image);
-        return 0;
+        return nullptr;
     }
 
     void *klass = GetClassType(image, namespaze, clazz);
     if(!klass) {
         IL2CPP_LOGI("Can't find class %s for method %s!", clazz, name);
-        return 0;
+        return nullptr;
     }
 
     void **method = (void**)il2cpp_class_get_method_from_name(klass, name, argsCount);
     if(!method) {
         IL2CPP_LOGI("Can't find method %s in class %s!", name, clazz);
-        return 0;
+        return nullptr;
     }
 
     return *method;
@@ -283,16 +293,16 @@ void *Il2Cpp::GetMethodOffset(const char *image, const char *namespaze, const ch
     void *img = GetImageByName(image);
     if(!img) {
         IL2CPP_LOGI("Can't find image %s!", image);
-        return 0;
+        return nullptr;
     }
 
     void *klass = GetClassType(image, namespaze, clazz);
     if(!klass) {
         IL2CPP_LOGI("Can't find class %s for method %s!", clazz, name);
-        return 0;
+        return nullptr;
     }
 
-    void *iter = 0;
+    void *iter = nullptr;
 
     int score = 0;
 
@@ -325,7 +335,20 @@ goto skip;
         method = (void **) il2cpp_class_get_methods(klass, &iter);
     }
     IL2CPP_LOGI("Cannot find function %s in class %s!", name, clazz);
-    return 0;
+    return nullptr;
+}
+
+const char *Il2Cpp::GetMethodName(void* method){
+    return il2cpp_method_get_name(method);
+}
+
+uintptr_t Il2Cpp::GetFieldOffset(void *clazz, const char *name){
+    void *field = il2cpp_class_get_field_from_name(clazz, name);
+    if(!field) {
+        IL2CPP_LOGI("Can't find field %s!", name);
+        return -1;
+    }
+    return il2cpp_field_get_offset(field);
 }
 // ================================================================================================================ //
 size_t Il2Cpp::GetFieldOffset(const char *image, const char *namespaze, const char *clazz, const char *name) {
@@ -352,36 +375,31 @@ bool Il2Cpp::IsAssembliesLoaded() {
     size_t size;
     void **assemblies = il2cpp_domain_get_assemblies(il2cpp_domain_get(), &size);
 
-    return size != 0 && assemblies != 0;
+    return size != 0 && assemblies != nullptr;
 }
 // ================================================================================================================ //
 void* Il2Cpp::CreateArray(const char *image, const char *namespaze, const char *clazz, size_t length) {
     void *img = GetImageByName(image);
     if(!img) {
         IL2CPP_LOGI("Can't find image %s!", image);
-        return 0;
+        return nullptr;
     }
     void *klass = GetClassType(image, namespaze, clazz);
     if(!klass) {
         IL2CPP_LOGI("Can't find class %s!", clazz);
-        return 0;
+        return nullptr;
     }
 
     return il2cpp_array_new(klass, length);
 }
 // ================================================================================================================ //
 
-static std::string utf16_to_utf8(const char16_t* str) {
-    std::size_t size = 0;
-    while (str[size])
-        ++size;
-
-    std::string sstr(size * 4 + 4, 0);
-
-    size_t newSize = utf::detail::utf16To8(str, str + size, sstr.begin(), sstr.end());
-    sstr.resize(newSize);
-    return sstr;
-}
 std::string Il2Cpp::GetString(void *string) {
-    return utf16_to_utf8(il2cpp_string_chars(string));
+    if (string) {
+        std::u16string str = il2cpp_string_chars(string);
+        std::wstring wide_string(str.begin(), str.end());
+        std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> convert;
+        return convert.to_bytes(wide_string);
+    }
+    return "Object NULL!";
 }
