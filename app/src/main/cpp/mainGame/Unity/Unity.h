@@ -15,7 +15,6 @@
 #include <locale>
 #include <dlfcn.h>
 
-
 static inline float NormalizeAngle(float angle) {
     while (angle > 360)
         angle -= 360;

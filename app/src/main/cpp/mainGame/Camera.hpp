@@ -1,24 +1,28 @@
 #pragma once
 
-struct S_Camera_API{
+enum MonoOrStereoscopicEye {
+    Left,
+    Right,
+    Mono
+};
+
+struct S_Camera_API {
     void *(*get_main)(void *);
-    Matrix4x4 (*get_projectionMatrix)(void *);
-    Matrix4x4 (*get_worldToCameraMatrix)(void *);
+
+    void (*WorldToScreenPoint_Injected)(void *,Vector3 position, MonoOrStereoscopicEye, Vector3 *screenPosition);
 };
 
 extern S_Camera_API Camera_API;
 
 class CCamera {
 public:
-    Matrix4x4 getProjectionMatrix(){
-        return Camera_API.get_projectionMatrix(this);
-    }
-    Matrix4x4 getWorldToCameraMatrix() {
-        return Camera_API.get_worldToCameraMatrix(this);
+    Vector3 WorldToScreenPoint(Vector3 pos) {
+        Vector3 screenPos;
+        Camera_API.WorldToScreenPoint_Injected(this, pos, Mono, &screenPos);
+        return screenPos;
     }
 };
-
-namespace Camera{
+namespace Camera {
     const char *getAssembly();
 
     const char *getNamespace();

@@ -14,51 +14,52 @@ import android.view.*
 class FloatingMod : Service() {
     private lateinit var view: BaseView
     private lateinit var params: WindowManager.LayoutParams
-    private lateinit var mWindowManager: WindowManager
-    private var rootFrame: View? = null
-    private val layoutType: Int
-        get() {
-            val LAYOUT_FLAG: Int = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
-            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                WindowManager.LayoutParams.TYPE_PHONE
-            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                WindowManager.LayoutParams.TYPE_TOAST
-            } else {
-                WindowManager.LayoutParams.TYPE_SYSTEM_ALERT
-            }
-            return LAYOUT_FLAG
-        }
+    lateinit var mWindowManager: WindowManager
+    private lateinit var rootFrame: View
+    var esp: ESPView? = null
 
     override fun onBind(intent: Intent): IBinder? {
         return null
     }
 
-    external fun Init(ctx: BaseView?)
+    private external fun Init(ctx: BaseView?)
+
     override fun onStartCommand(intent: Intent, i: Int, i2: Int): Int {
         return START_NOT_STICKY
     }
 
     override fun onCreate() {
         super.onCreate()
-        initFloating()
-        DrawCanvas()
-        val handler = Handler()
+        initBase()
+        val handler = Handler(mainLooper)
         handler.post(object : Runnable {
             override fun run() {
-                Thread()
+                thread()
                 handler.postDelayed(this, 2000)
             }
         })
     }
 
-    //Here we write the code for our Menu
-    fun initFloating() {
+    @Suppress("DEPRECATION")
+    private fun initBase() {
+        //Floating View
         view = BaseView(this)
         rootFrame = view.rootView
-        rootFrame!!.setOnTouchListener(onTouchListener())
+        rootFrame.setOnTouchListener(onTouchListener())
         view.startimage.setOnTouchListener(onTouchListener())
+
         Init(view)
+
+        val layoutType = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            WindowManager.LayoutParams.TYPE_PHONE
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            WindowManager.LayoutParams.TYPE_TOAST
+        } else {
+            WindowManager.LayoutParams.TYPE_SYSTEM_ALERT
+        }
+
         params = WindowManager.LayoutParams(
             WindowManager.LayoutParams.WRAP_CONTENT,
             WindowManager.LayoutParams.WRAP_CONTENT,
@@ -71,12 +72,10 @@ class FloatingMod : Service() {
         params.y = 100
         mWindowManager = getSystemService(WINDOW_SERVICE) as WindowManager
         mWindowManager.addView(rootFrame, params)
-    }
 
-    var esp: ESPView? = null
-    fun DrawCanvas() {
+        //ESP View
         esp = ESPView(this)
-        val params2: WindowManager.LayoutParams = WindowManager.LayoutParams(
+        val params2 = WindowManager.LayoutParams(
             WindowManager.LayoutParams.MATCH_PARENT,
             WindowManager.LayoutParams.MATCH_PARENT, 0, navigationBarHeight(),
             layoutType,
@@ -84,8 +83,8 @@ class FloatingMod : Service() {
                     or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or WindowManager.LayoutParams.FLAG_FULLSCREEN,
             PixelFormat.TRANSLUCENT
         )
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) params2.layoutInDisplayCutoutMode =
-            WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P)
+            params2.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT
         params2.gravity = Gravity.TOP or Gravity.START
         params2.x = 0
         params2.y = 0
@@ -106,15 +105,12 @@ class FloatingMod : Service() {
             return runningAppProcessInfo.importance != 100
         }
 
-    private fun Thread() {
-        if (esp == null && rootFrame == null) {
-            return
-        }
+    private fun thread() {
         if (isNotInGame) {
-            rootFrame!!.visibility = View.INVISIBLE
+            rootFrame.visibility = View.INVISIBLE
             esp!!.visibility = View.INVISIBLE
         } else {
-            rootFrame!!.visibility = View.VISIBLE
+            rootFrame.visibility = View.VISIBLE
             esp!!.visibility = View.VISIBLE
         }
     }
@@ -162,7 +158,7 @@ class FloatingMod : Service() {
 
     companion object {
         init {
-            System.loadLibrary("mUnityActivity")
+            System.loadLibrary("polarmods")
         }
     }
 }

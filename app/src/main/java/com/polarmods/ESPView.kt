@@ -29,7 +29,7 @@ class ESPView(context: Context?) : View(context, null, 0), Runnable {
     }
 
     override fun onDraw(canvas: Canvas) {
-        if (canvas != null && visibility == VISIBLE) {
+        if (visibility == VISIBLE) {
             ClearCanvas(canvas)
             DrawOn(canvas)
         }

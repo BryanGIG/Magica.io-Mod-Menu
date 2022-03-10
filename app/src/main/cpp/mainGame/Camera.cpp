@@ -18,8 +18,7 @@ namespace Camera {
 
     void Initialize(){
         setPointer(Camera_API.get_main, getAssembly(), getNamespace(), getClass(), "get_main", 0);
-        setPointer(Camera_API.get_projectionMatrix, getAssembly(), getNamespace(), getClass(), "get_projectionMatrix", 0);
-        setPointer(Camera_API.get_worldToCameraMatrix, getAssembly(), getNamespace(), getClass(), "get_worldToCameraMatrix", 0);
+        setPointer(Camera_API.WorldToScreenPoint_Injected, getAssembly(), getNamespace(), getClass(), "WorldToScreenPoint_Injected", 3);
     }
 
     CCamera *get_main(){

@@ -127,10 +127,10 @@ public:
     }
 
     void DrawBox(Colors color, float stroke, Rect rect) {
-        Vector2 v1 = Vector2(rect.m_XMin, rect.m_YMin);
-        Vector2 v2 = Vector2(rect.m_XMin + rect.m_Width, rect.m_YMin);
-        Vector2 v3 = Vector2(rect.m_XMin + rect.m_Width, rect.m_YMin + rect.m_Height);
-        Vector2 v4 = Vector2(rect.m_XMin, rect.m_YMin + rect.m_Height);
+        Vector2 v1 = Vector2(rect.x, rect.y);
+        Vector2 v2 = Vector2(rect.x + rect.width, rect.y);
+        Vector2 v3 = Vector2(rect.x + rect.width, rect.y + rect.height);
+        Vector2 v4 = Vector2(rect.x, rect.y + rect.height);
 
         DrawLine(color, stroke, v1, v2);
         DrawLine(color, stroke, v2, v3);

@@ -18,6 +18,7 @@ add_library(polarmods SHARED
         mainGame/Unity/API.cpp
         mainGame/Camera.cpp
         mainGame/GameCore.cpp
-        mainGame/Character.cpp)
+        mainGame/Character.cpp
+        mainGame/Analytics.cpp)
 
 target_link_libraries(polarmods ${log-lib} dobby::dobby)

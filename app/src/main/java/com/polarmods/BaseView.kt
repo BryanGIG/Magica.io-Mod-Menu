@@ -3,7 +3,6 @@ package com.polarmods
 import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.Context
-import android.content.DialogInterface
 import android.content.Intent
 import android.content.res.ColorStateList
 import android.graphics.BitmapFactory
@@ -33,7 +32,7 @@ import java.util.regex.Pattern
 import kotlin.math.max
 
 @SuppressLint("SetTextI18n")
-class BaseView(context: Context) : FrameLayout(context) {
+class BaseView(ctx: Context) : FrameLayout(ctx) {
     private var TEXT_COLOR = Color.parseColor("#82CAFD")
     private var TEXT_COLOR_2 = Color.parseColor("#FFFFFF")
     private var BTN_COLOR = Color.parseColor("#1C262D")
@@ -49,12 +48,12 @@ class BaseView(context: Context) : FrameLayout(context) {
     private var ToggleOFF = Color.RED
     private var BtnON = Color.parseColor("#1b5e20")
     private var BtnOFF = Color.parseColor("#7f0000")
-    var CategoryBG = Color.parseColor("#2F3D4C")
-    var SeekBarColor = Color.parseColor("#80CBC4")
-    var SeekBarProgressColor = Color.parseColor("#80CBC4")
-    var CheckBoxColor = Color.parseColor("#80CBC4")
-    var RadioColor = Color.parseColor("#FFFFFF")
-    var NumberTxtColor = "#41c300"
+    private var CategoryBG = Color.parseColor("#2F3D4C")
+    private var SeekBarColor = Color.parseColor("#80CBC4")
+    private var SeekBarProgressColor = Color.parseColor("#80CBC4")
+    private var CheckBoxColor = Color.parseColor("#80CBC4")
+    private var RadioColor = Color.parseColor("#FFFFFF")
+    private var NumberTxtColor = "#41c300"
 
     private lateinit var title: TextView
     private lateinit var heading: TextView
@@ -62,25 +61,22 @@ class BaseView(context: Context) : FrameLayout(context) {
     lateinit var mCollapsed: RelativeLayout
     lateinit var mExpanded: LinearLayout
     lateinit var startimage: ImageView
-    external fun Changes(feature: String?, value: Int)
 
-    private val pattern = Pattern.compile(HTML_PATTERN)
-    fun hasHTMLTags(text: String): Boolean {
-        val matcher = pattern.matcher(text)
-        return matcher.find()
-    }
+    external fun Changes(feature: String, value: Int, value2: String?)
 
     fun changeIcon(base64: String?) {
         val decode = Base64.decode(base64, 0)
         startimage.setImageBitmap(BitmapFactory.decodeByteArray(decode, 0, decode.size))
     }
 
+    @Suppress("unused")
     fun changeTitle(text: String) {
-        title.setText(toHTML(text))
+        title.text = toHTML(text)
     }
 
+    @Suppress("unused")
     fun changeHeading(text: String) {
-        heading.setText(toHTML(text))
+        heading.text = toHTML(text)
     }
 
     fun addFeature(listFT: Array<String>) {
@@ -88,28 +84,25 @@ class BaseView(context: Context) : FrameLayout(context) {
     }
 
     private fun init() {
-        val mRootContainer =
-            RelativeLayout(context) // Markup on which two markups of the icon and the menu itself will be placed
-        mCollapsed = RelativeLayout(context) // Markup of the icon (when the menu is minimized)
-        mCollapsed.setVisibility(View.VISIBLE)
-        mCollapsed.setAlpha(ICON_ALPHA)
+        val mRootContainer = RelativeLayout(context)
+        mCollapsed = RelativeLayout(context)
+        mCollapsed.visibility = View.VISIBLE
+        mCollapsed.alpha = ICON_ALPHA
 
         //********** The box of the mod menu **********
         mExpanded = LinearLayout(context) // Menu markup (when the menu is expanded)
         //        mExpanded.setVisibility(View.GONE);
         mExpanded.setBackgroundColor(MENU_BG_COLOR)
-        mExpanded.setGravity(Gravity.CENTER)
-        mExpanded.setOrientation(LinearLayout.VERTICAL)
-        mExpanded.setLayoutParams(
-            LinearLayout.LayoutParams(
-                dp(MENU_WIDTH),
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            )
+        mExpanded.gravity = Gravity.CENTER
+        mExpanded.orientation = LinearLayout.VERTICAL
+        mExpanded.layoutParams = LinearLayout.LayoutParams(
+            dp(MENU_WIDTH),
+            ViewGroup.LayoutParams.WRAP_CONTENT
         )
         val gdMenuBody = GradientDrawable()
-        gdMenuBody.setCornerRadius(MENU_CORNER) //Set corner
+        gdMenuBody.cornerRadius = MENU_CORNER //Set corner
         gdMenuBody.setColor(MENU_BG_COLOR) //Set background color
-        mExpanded.setBackground(gdMenuBody) //Apply aninmation to it
+        mExpanded.background = gdMenuBody //Apply aninmation to it
         startimage = ImageView(context)
         startimage.layoutParams = RelativeLayout.LayoutParams(
             ViewGroup.LayoutParams.WRAP_CONTENT,
@@ -125,9 +118,9 @@ class BaseView(context: Context) : FrameLayout(context) {
         startimage.requestLayout()
         startimage.scaleType = ImageView.ScaleType.FIT_XY
         (startimage.layoutParams as MarginLayoutParams).topMargin = convertDipToPixels(10)
-        startimage.setOnClickListener { view: View? ->
-            mCollapsed.setVisibility(View.GONE)
-            mExpanded.setVisibility(View.VISIBLE)
+        startimage.setOnClickListener {
+            mCollapsed.visibility = View.GONE
+            mExpanded.visibility = View.VISIBLE
         }
 
         //********** Title text **********
@@ -135,27 +128,27 @@ class BaseView(context: Context) : FrameLayout(context) {
         titleText.setPadding(10, 5, 10, 5)
         titleText.setVerticalGravity(16)
         title = TextView(context)
-        title.setText("Polarmods.com")
+        title.text = "Polarmods.com"
         title.setTextColor(TEXT_COLOR)
-        title.setTextSize(18.0f)
-        title.setGravity(Gravity.CENTER)
+        title.textSize = 18.0f
+        title.gravity = Gravity.CENTER
         val rl: RelativeLayout.LayoutParams = RelativeLayout.LayoutParams(
             ViewGroup.LayoutParams.WRAP_CONTENT,
             ViewGroup.LayoutParams.WRAP_CONTENT
         )
         rl.addRule(RelativeLayout.CENTER_HORIZONTAL)
-        title.setLayoutParams(rl)
+        title.layoutParams = rl
 
         //********** Heading text **********
         heading = TextView(context)
-        heading.setText("This mod was provided by @BryanGIG")
-        heading.setEllipsize(TextUtils.TruncateAt.MARQUEE)
-        heading.setMarqueeRepeatLimit(-1)
-        heading.setSingleLine(true)
-        heading.setSelected(true)
+        heading.text = "This mod was provided by @BryanGIG"
+        heading.ellipsize = TextUtils.TruncateAt.MARQUEE
+        heading.marqueeRepeatLimit = -1
+        heading.isSingleLine = true
+        heading.isSelected = true
         heading.setTextColor(TEXT_COLOR)
-        heading.setTextSize(10.0f)
-        heading.setGravity(Gravity.CENTER)
+        heading.textSize = 10.0f
+        heading.gravity = Gravity.CENTER
         heading.setPadding(0, 0, 0, 5)
 
         //********** Mod menu feature list **********
@@ -166,7 +159,7 @@ class BaseView(context: Context) : FrameLayout(context) {
         scrollView.layoutParams = scrlLL
         scrollView.setBackgroundColor(MENU_FEATURE_BG_COLOR)
         patches = LinearLayout(context)
-        patches.setOrientation(LinearLayout.VERTICAL)
+        patches.orientation = LinearLayout.VERTICAL
         //**********  Hide/Kill button **********
         val relativeLayout = RelativeLayout(context)
         relativeLayout.setPadding(10, 3, 10, 3)
@@ -176,9 +169,9 @@ class BaseView(context: Context) : FrameLayout(context) {
         hideBtn.text = "HIDE/KILL (Hold)"
         hideBtn.setTextColor(TEXT_COLOR)
         hideBtn.setOnClickListener { view: View ->
-            mCollapsed.setVisibility(View.VISIBLE)
-            mCollapsed.setAlpha(0f)
-            mExpanded.setVisibility(View.GONE)
+            mCollapsed.visibility = View.VISIBLE
+            mCollapsed.alpha = 0f
+            mExpanded.visibility = View.GONE
             Toast.makeText(
                 view.context,
                 "Icon hidden. Remember the hidden icon position",
@@ -196,9 +189,9 @@ class BaseView(context: Context) : FrameLayout(context) {
         closeBtn.text = "MINIMIZE"
         closeBtn.setTextColor(TEXT_COLOR)
         closeBtn.setOnClickListener { view: View? ->
-            mCollapsed.setVisibility(View.VISIBLE)
-            mCollapsed.setAlpha(ICON_ALPHA)
-            mExpanded.setVisibility(View.GONE)
+            mCollapsed.visibility = View.VISIBLE
+            mCollapsed.alpha = ICON_ALPHA
+            mExpanded.visibility = View.GONE
         }
         val layoutParams: RelativeLayout.LayoutParams = RelativeLayout.LayoutParams(
             ViewGroup.LayoutParams.WRAP_CONTENT,
@@ -329,7 +322,7 @@ class BaseView(context: Context) : FrameLayout(context) {
         switchR.setOnCheckedChangeListener { _, isChecked: Boolean ->
             Changes(
                 featureName,
-                if (isChecked) 1 else 0
+                isChecked.toInt(), null
             )
         }
         return switchR
@@ -341,12 +334,14 @@ class BaseView(context: Context) : FrameLayout(context) {
         linearLayout.orientation = LinearLayout.VERTICAL
         linearLayout.gravity = Gravity.CENTER
         val textView = TextView(context)
-        textView.text = toHTML("<font face='roboto'>$featureName: <font color='$NumberTxtColor'>$min</font>")
+        textView.text =
+            toHTML("<font face='roboto'>$featureName: <font color='$NumberTxtColor'>$min</font>")
         textView.setTextColor(TEXT_COLOR_2)
         val seekBar = SeekBar(context)
         seekBar.setPadding(25, 10, 35, 10)
         seekBar.max = max
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) seekBar.min = min //setMin for Oreo and above
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) seekBar.min =
+            min //setMin for Oreo and above
         seekBar.progress = min
         seekBar.thumb.setColorFilter(SeekBarColor, PorterDuff.Mode.SRC_ATOP)
         seekBar.progressDrawable.setColorFilter(SeekBarProgressColor, PorterDuff.Mode.SRC_ATOP)
@@ -355,13 +350,15 @@ class BaseView(context: Context) : FrameLayout(context) {
             override fun onStopTrackingTouch(seekBar: SeekBar) {}
             override fun onProgressChanged(seekBar: SeekBar, i: Int, z: Boolean) {
                 //if progress is greater than minimum, don't go below. Else, set progress
-                seekBar.progress = Math.max(i, min)
-                Changes(featureName, i)
+                seekBar.progress = max(i, min)
+                Changes(featureName, i, null)
                 textView.text = toHTML(
-                    "<font face='roboto'>$featureName: <font color='$NumberTxtColor'>" + max(
-                        i,
-                        min
-                    ) + "</font>"
+                    "<font face='roboto'>$featureName: <font color='$NumberTxtColor'>${
+                        max(
+                            i,
+                            min
+                        )
+                    } </font>"
                 )
             }
         })
@@ -383,7 +380,7 @@ class BaseView(context: Context) : FrameLayout(context) {
         button.isAllCaps = false //Disable caps to support html
         button.text = toHTML(featureName)
         button.setBackgroundColor(BTN_COLOR)
-        button.setOnClickListener { v: View? -> Changes(featureName, 1) }
+        button.setOnClickListener { Changes(featureName, 1, null) }
         return button
     }
 
@@ -401,8 +398,8 @@ class BaseView(context: Context) : FrameLayout(context) {
         button.setBackgroundColor(BTN_COLOR)
         button.setOnClickListener { v: View? ->
             val intent = Intent(Intent.ACTION_VIEW)
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            intent.setData(Uri.parse(url))
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            intent.data = Uri.parse(url)
             context.startActivity(intent)
         }
         return button
@@ -423,7 +420,7 @@ class BaseView(context: Context) : FrameLayout(context) {
         button.setOnClickListener(object : OnClickListener {
             var isOn = finalIsOn
             override fun onClick(v: View) {
-                Changes(featureName, if (isOn) 1 else 0)
+                Changes(featureName, isOn.toInt(), null)
                 if (isOn) {
                     button.text = toHTML("$finalFeatureName: ON")
                     button.setBackgroundColor(BtnON)
@@ -440,7 +437,7 @@ class BaseView(context: Context) : FrameLayout(context) {
     }
 
     private fun Spinner(featureNum: Int, featureName: String, list: String): View {
-        val lists: List<String> = LinkedList(Arrays.asList(*list.split(",").toTypedArray()))
+        val lists: List<String> = LinkedList(listOf(*list.split(",").toTypedArray()))
 
         // Create another LinearLayout as a workaround to use it as a background
         // and to keep the 'down' arrow symbol
@@ -475,7 +472,7 @@ class BaseView(context: Context) : FrameLayout(context) {
                 position: Int,
                 id: Long
             ) {
-                Changes(featureName, position)
+                Changes(featureName, position, null)
                 (parentView.getChildAt(0) as TextView).setTextColor(TEXT_COLOR_2)
                 Toast.makeText(context, featureName, Toast.LENGTH_SHORT).show()
             }
@@ -510,10 +507,10 @@ class BaseView(context: Context) : FrameLayout(context) {
         button.layoutParams = layoutParams
         button.setBackgroundColor(BTN_COLOR)
         button.setTextColor(TEXT_COLOR_2)
-        button.setOnClickListener { view: View? ->
+        button.setOnClickListener {
             val alert = AlertDialog.Builder(context, 2).create()
             alert.window?.setType(if (Build.VERSION.SDK_INT >= 26) 2038 else 2002)
-            alert.setOnCancelListener { dialog: DialogInterface? ->
+            alert.setOnCancelListener {
                 val imm =
                     context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
                 imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0)
@@ -526,9 +523,9 @@ class BaseView(context: Context) : FrameLayout(context) {
             linearLayout1.setBackgroundColor(MENU_FEATURE_BG_COLOR)
 
             //TextView
-            val TextViewNote = TextView(context)
-            TextViewNote.text = "Tap OK to apply changes. Tap outside to cancel"
-            TextViewNote.setTextColor(TEXT_COLOR_2)
+            val textViewNote = TextView(context)
+            textViewNote.text = "Tap OK to apply changes. Tap outside to cancel"
+            textViewNote.setTextColor(TEXT_COLOR_2)
 
             //Edit text
             val edittext = EditText(context)
@@ -578,18 +575,18 @@ class BaseView(context: Context) : FrameLayout(context) {
                     button.text =
                         toHTML("<font face='roboto'>$featureName: <font color='#41c300'>$num</font></font>")
                     alert.dismiss()
-                    Changes(featureName, num)
+                    Changes(featureName, num, null)
                 } else {
                     val str: String = edittext.text.toString()
                     edittextstring.string = edittext.text.toString()
                     button.text =
                         toHTML("<font face='roboto'>$featureName: <font color='#41c300'>$str</font></font>")
                     alert.dismiss()
-                    Changes(featureName, 0)
+                    Changes(featureName, -1000, str)
                 }
                 edittext.isFocusable = false
             }
-            linearLayout1.addView(TextViewNote)
+            linearLayout1.addView(textViewNote)
             linearLayout1.addView(edittext)
             linearLayout1.addView(btndialog)
             alert.setView(linearLayout1)
@@ -618,17 +615,16 @@ class BaseView(context: Context) : FrameLayout(context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) checkBox.buttonTintList =
             ColorStateList.valueOf(CheckBoxColor)
         checkBox.isChecked = switchedOn
-        checkBox.setOnCheckedChangeListener { buttonView: CompoundButton?, isChecked: Boolean ->
+        checkBox.setOnCheckedChangeListener { _: CompoundButton?, isChecked: Boolean ->
             Changes(
-                featureName,
-                if (isChecked) 1 else 0
+                featureName, isChecked.toInt(), null
             )
         }
         return checkBox
     }
 
     private fun RadioButton(featureNum: Int, featureName: String, list: String): View {
-        val lists: List<String> = LinkedList(Arrays.asList(*list.split(",").toTypedArray()))
+        val lists: List<String> = LinkedList(listOf(*list.split(",").toTypedArray()))
         val textView = TextView(context)
         textView.text = "$featureName:"
         textView.setTextColor(TEXT_COLOR_2)
@@ -640,8 +636,9 @@ class BaseView(context: Context) : FrameLayout(context) {
             val Radioo = RadioButton(context)
             val radioName = lists[i]
             val first_radio_listener = OnClickListener { v: View? ->
-                textView.text = toHTML("<font face='roboto'>$featureName: <font color='$NumberTxtColor'>$radioName</font>")
-                Changes(featureName, radioGroup.indexOfChild(Radioo))
+                textView.text =
+                    toHTML("<font face='roboto'>$featureName: <font color='$NumberTxtColor'>$radioName</font>")
+                Changes(featureName, radioGroup.indexOfChild(Radioo), null)
             }
             println(lists[i])
             Radioo.text = lists[i]
@@ -678,7 +675,7 @@ class BaseView(context: Context) : FrameLayout(context) {
         wView.loadData(text, "text/html", "utf-8")
         wView.setBackgroundColor(0x00000000) //Transparent
         wView.setPadding(0, 5, 0, 5)
-        wView.getSettings().setAppCacheEnabled(false)
+        wView.settings.setAppCacheEnabled(false)
         wView.requestLayout()
         return wView
     }
@@ -704,12 +701,19 @@ class BaseView(context: Context) : FrameLayout(context) {
         ).toInt()
     }
 
-    companion object {
-        private const val HTML_PATTERN = "<(\"[^\"]*\"|'[^']*'|[^'\">])*>"
+    private val pattern = Pattern.compile("<(\"[^\"]*\"|'[^']*'|[^'\">])*>")
+
+    private fun hasHTMLTags(text: String): Boolean {
+        val matcher = pattern.matcher(text)
+        return matcher.find()
     }
 
     init {
         init()
-        mExpanded.setVisibility(View.GONE)
+        mExpanded.visibility = View.GONE
+    }
+
+    private fun Boolean.toInt(): Int {
+        return if (this) 1 else 0
     }
 }

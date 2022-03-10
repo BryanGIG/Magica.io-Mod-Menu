@@ -54,14 +54,11 @@ namespace base64 {
 }
 
 DWORD findLibrary(const char *library) {
-    char filename[0xFF] = {0},
-            buffer[1024] = {0};
+    char buffer[1024] = {0};
     FILE *fp = NULL;
     DWORD address = 0;
 
-    sprintf(filename, OBFUSCATE("/proc/self/maps"));
-
-    fp = fopen(filename, OBFUSCATE("rt"));
+    fp = fopen(OBFUSCATE("/proc/self/maps"), OBFUSCATE("rt"));
     if (fp == NULL) {
         perror(OBFUSCATE("fopen"));
         goto done;
@@ -125,7 +122,6 @@ void MakeToast(JNIEnv *env, jobject thiz, const char *text, int length) {
                     OBFUSCATE(
                             "(Landroid/content/Context;Ljava/lang/CharSequence;I)Landroid/widget/Toast;"));
     if (methodMakeText == NULL) {
-        LOGE(OBFUSCATE("toast.makeText not Found"));
         return;
     }
     //The last int is the length on how long the toast should be displayed
@@ -135,7 +131,6 @@ void MakeToast(JNIEnv *env, jobject thiz, const char *text, int length) {
 
     jmethodID methodShow = env->GetMethodID(toast, OBFUSCATE("show"), OBFUSCATE("()V"));
     if (methodShow == NULL) {
-        LOGE(OBFUSCATE("toast.show not Found"));
         return;
     }
     env->CallVoidMethod(toastobj, methodShow);

@@ -6,14 +6,13 @@
 #include <map>
 #include <fstream>
 #include <sstream>
-#include <iostream>
+#include <any>
 #include <obfuscate.h>
 #include <Logger.h>
 #include <Utils.h>
-#include "Unity/API.h"
-#include "Unity/Unity.h"
+#include "mainGame/Unity/API.h"
+#include "mainGame/Includes.hpp"
 #include <Esp.h>
-#include <Gameclass.h>
 #include <Tools.h>
 
 #define HOOK_DEF(ret, func, ...) \
@@ -30,6 +29,6 @@ struct Response {
     PlayerData Players[maxplayerCount];
 } resp;
 
-std::map<std::string, u_long> Configs;
+std::map<std::string, std::any> Configs;
 
 Vector2 screen;

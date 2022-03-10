@@ -1,5 +1,4 @@
 #include "Main.h"
-#include "mainGame/Includes.hpp"
 
 extern "C"
 JNIEXPORT void JNICALL
@@ -14,7 +13,7 @@ Java_com_polarmods_FloatingMod_Init(JNIEnv *env, jobject, jobject ctx) {
     auto toHtml = env->GetMethodID(clax, "toHTML", "(Ljava/lang/String;)Ljava/lang/CharSequence;");
     auto titleObj = env->GetObjectField(ctx, TITLE);
     auto headerObj = env->GetObjectField(ctx, HEADER);
-    env->CallVoidMethod(titleObj, setText, env->NewStringUTF(OBFUSCATE("Mobile Legends Mod")));
+    env->CallVoidMethod(titleObj, setText, env->NewStringUTF(OBFUSCATE("Magica.io Mod")));
     auto HTML = env->CallObjectMethod(ctx, toHtml, env->NewStringUTF(OBFUSCATE(
                                                                              "<b><marquee><p style=\"font-size:30\">"
                                                                              "<p style=\"color:green;\">Modded by BryanGIG</p> | "
@@ -35,10 +34,12 @@ Java_com_polarmods_FloatingMod_Init(JNIEnv *env, jobject, jobject ctx) {
 
     const char *features[] = {
             OBFUSCATE("Category_>>> www.polarmods.com <<<"),
-            OBFUSCATE("Category_Feature List"),
+            OBFUSCATE("Category_GamePlay Features"),
             OBFUSCATE("CheckBox_Anti Dirted"),
             OBFUSCATE("CheckBox_Anti Frozen"),
             OBFUSCATE("CheckBox_Anti Stunned"),
+            OBFUSCATE("InputValue_Set Crystal Amount_0_500"),
+            OBFUSCATE("InputText_Set Player Name"),
     };
     int Total_Feature = (sizeof(features) / sizeof(features[0]));
     ret = (jobjectArray)
@@ -49,32 +50,49 @@ Java_com_polarmods_FloatingMod_Init(JNIEnv *env, jobject, jobject ctx) {
         env->SetObjectArrayElement(ret, i, env->NewStringUTF(features[i]));
     env->CallVoidMethod(ctx, FEATURE, ret);
 }
+
+HOOK_DEF(void, SendVideoAdsEvent, AdsPlacement placement, AdsResult result, void *str_object_id){
+    orig_SendVideoAdsEvent(placement, watched, str_object_id);
+}
+
 HOOK_DEF(void, updateDelta, CCharacter *instance, float deltaTime) {
     orig_updateDelta(instance, deltaTime);
-    if (instance->get_isLocalPlayer() && instance->get_isSpawned()){
-        if (Configs["Anti Dirted"] && instance->get_isDirted()){
-            instance->set_isDirted(false);
-        }
-        if (Configs["Anti Frozen"] && instance->get_isFrosted()){
-            instance->set_isFrosted(false);
-        }
-        if (Configs["Anti Stunned"] && instance->get_isStuned()){
-            instance->set_isStuned(false);
-        }
+    if (instance->get_isLocalPlayer() && instance->get_isSpawned()) {
+        try {
+            bool isDirted = std::any_cast<bool>(Configs["Anti Dirted"]);
+            bool isFrozen = std::any_cast<bool>(Configs["Anti Frozen"]);
+            bool isStunned = std::any_cast<bool>(Configs["Anti Stunned"]);
+
+            if (isDirted && instance->get_isDirted()) {
+                LOGI("Lmao you got dirted");
+                instance->set_isDirted(false);
+            }
+            if (isFrozen && instance->get_isFrosted()) {
+                LOGI("Lmao you got frozen");
+                instance->set_isFrosted(false);
+            }
+            if (isStunned && instance->get_isStuned()) {
+                LOGI("Lmao you got stunned");
+                instance->set_isStuned(false);
+            }
+        } catch (const std::bad_any_cast &e) {}
     }
 }
 
 void *gameload(void *) {
+    const char *libName = OBFUSCATE("libil2cpp.so");
     do {
         sleep(10);
-    } while (!isLibraryLoaded(OBFUSCATE("libil2cpp.so")));
+    } while (!isLibraryLoaded(libName));
 
-    Il2Cpp::Init(OBFUSCATE("libil2cpp.so"));
+    Il2Cpp::Init(libName);
     Camera::Initialize();
     GameCore::Initialize();
     Character::Initialize();
+    Analytics::Initialize();
 
-    Tools::HookFunc((void *) Character_API.updateDelta, (void *)new_updateDelta, (void **) &orig_updateDelta);
+    Tools::HookFunc((void *) Character_API.updateDelta, (void *) new_updateDelta,(void **) &orig_updateDelta);
+    Tools::HookFunc((void *) Analytics_API.SendVideoAdsEvent, (void *) new_SendVideoAdsEvent,(void **) &orig_SendVideoAdsEvent);
     return nullptr;
 }
 
@@ -85,23 +103,33 @@ Java_com_polarmods_ESPView_DrawOn(JNIEnv *env, jobject espView, jobject canvas) 
     if (espOverlay.isValid()) {
         screen = Vector2(espOverlay.getWidth(), espOverlay.getHeight());
 
-        for (int u = 0; u < resp.PlayerCount; u++) {
-            if (!resp.Players[u].isLegit) continue;
+        try {
+            for (int u = 0; u < resp.PlayerCount; u++) {
+                if (!resp.Players[u].isLegit) continue;
 
-            auto enemyPos = resp.Players[u].Location;
+                auto enemyPos = resp.Players[u].Location;
 
-            if (Configs["Draw Player Line"]) {
-                espOverlay.DrawLine(Colors::yellow(), 3, screen / 2, enemyPos);
+                auto drawLine = std::any_cast<bool>(Configs["Draw Player Line"]);
+                if (drawLine) {
+                    espOverlay.DrawLine(Colors::yellow(), 3, screen / 2, enemyPos);
+                }
             }
-        }
+        } catch (const std::bad_any_cast &e) {}
     }
 }
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_polarmods_BaseView_Changes(JNIEnv *env, jobject, jstring feature, jint value) {
-    auto features = env->GetStringUTFChars(feature, nullptr);
-    Configs[(const char *) features] = (u_long) value;
+Java_com_polarmods_BaseView_Changes(JNIEnv *env, jobject, jstring feature, jint value,
+                                    jstring value2) {
+    const char *features = env->GetStringUTFChars(feature, nullptr);
+    if (value2 != nullptr) {
+        const char *values2 = env->GetStringUTFChars(value2, nullptr);
+        Configs[features] = values2;
+        env->ReleaseStringUTFChars(value2, values2);
+    } else {
+        Configs[features] = value;
+    }
     env->ReleaseStringUTFChars(feature, features);
 }
 

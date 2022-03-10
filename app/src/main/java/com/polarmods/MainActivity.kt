@@ -16,17 +16,18 @@ class MainActivity : Activity() {
     }
 
     companion object {
+
         @JvmStatic
         fun startFloating(context: Context) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(context)) {
                 Toast.makeText(
-                    context.applicationContext,
-                    "Restart the game after you allow permission",
+                    context,
+                    "Please grant permission window for this game\nRestart the game after you allow permission!",
                     Toast.LENGTH_LONG
                 ).show()
                 context.startActivity(
                     Intent(
-                        "android.settings.action.MANAGE_OVERLAY_PERMISSION",
+                        Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
                         Uri.parse("package:${context.packageName}")
                     )
                 )
