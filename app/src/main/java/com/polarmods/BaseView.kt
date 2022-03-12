@@ -18,6 +18,7 @@ import android.text.InputType
 import android.text.TextUtils
 import android.text.method.DigitsKeyListener
 import android.util.Base64
+import android.util.Log
 import android.util.TypedValue
 import android.view.Gravity
 import android.view.View
@@ -32,7 +33,7 @@ import java.util.regex.Pattern
 import kotlin.math.max
 
 @SuppressLint("SetTextI18n")
-class BaseView(ctx: Context) : FrameLayout(ctx) {
+class BaseView(val ctx: FloatingMod) : FrameLayout(ctx) {
     private var TEXT_COLOR = Color.parseColor("#82CAFD")
     private var TEXT_COLOR_2 = Color.parseColor("#FFFFFF")
     private var BTN_COLOR = Color.parseColor("#1C262D")
@@ -64,23 +65,9 @@ class BaseView(ctx: Context) : FrameLayout(ctx) {
 
     external fun Changes(feature: String, value: Int, value2: String?)
 
-    fun changeIcon(base64: String?) {
+    fun changeIcon(base64: String) {
         val decode = Base64.decode(base64, 0)
         startimage.setImageBitmap(BitmapFactory.decodeByteArray(decode, 0, decode.size))
-    }
-
-    @Suppress("unused")
-    fun changeTitle(text: String) {
-        title.text = toHTML(text)
-    }
-
-    @Suppress("unused")
-    fun changeHeading(text: String) {
-        heading.text = toHTML(text)
-    }
-
-    fun addFeature(listFT: Array<String>) {
-        featureList(listFT, patches)
     }
 
     private fun init() {
@@ -178,9 +165,11 @@ class BaseView(ctx: Context) : FrameLayout(ctx) {
                 Toast.LENGTH_LONG
             ).show()
         }
-        hideBtn.setOnLongClickListener { view: View ->
-            Toast.makeText(view.context, "Menu service killed", Toast.LENGTH_LONG).show()
-            false
+
+        hideBtn.setOnLongClickListener {
+            Toast.makeText(context, "Menu service killed", Toast.LENGTH_LONG).show()
+            ctx.stopSelf()
+            true
         }
 
         //********** Close button **********
@@ -216,13 +205,12 @@ class BaseView(ctx: Context) : FrameLayout(ctx) {
         mExpanded.addView(relativeLayout)
     }
 
-    private fun featureList(listFT: Array<String>, linearLayout: LinearLayout) {
+    private fun featureList(listFT: Array<String>) {
         var featureNum: Int
         var subFeat = 0
         for (i in listFT.indices) {
             if (listFT[i] != "") {
                 var switchedOn = false
-                //            Log.i("featureList", listFT[i]);
                 var feature = listFT[i]
                 if (feature.contains("True_")) {
                     switchedOn = true
@@ -239,8 +227,8 @@ class BaseView(ctx: Context) : FrameLayout(ctx) {
                 }
                 val strSplit = feature.split("_").toTypedArray()
                 when (strSplit[0]) {
-                    "Toggle" -> linearLayout.addView(Switch(featureNum, strSplit[1], switchedOn))
-                    "SeekBar" -> linearLayout.addView(
+                    "Toggle" -> patches.addView(Switch(featureNum, strSplit[1], switchedOn))
+                    "SeekBar" -> patches.addView(
                         SeekBar(
                             featureNum,
                             strSplit[1],
@@ -248,8 +236,8 @@ class BaseView(ctx: Context) : FrameLayout(ctx) {
                             strSplit[3].toInt()
                         )
                     )
-                    "Button" -> linearLayout.addView(Button(featureNum, strSplit[1]))
-                    "ButtonOnOff" -> linearLayout.addView(
+                    "Button" -> patches.addView(Button(featureNum, strSplit[1]))
+                    "ButtonOnOff" -> patches.addView(
                         ButtonOnOff(
                             featureNum,
                             strSplit[1],
@@ -257,19 +245,19 @@ class BaseView(ctx: Context) : FrameLayout(ctx) {
                         )
                     )
                     "Spinner" -> {
-                        linearLayout.addView(RichTextView(strSplit[1]))
-                        linearLayout.addView(Spinner(featureNum, strSplit[1], strSplit[2]))
+                        patches.addView(RichTextView(strSplit[1]))
+                        patches.addView(Spinner(featureNum, strSplit[1], strSplit[2]))
                     }
-                    "InputText" -> linearLayout.addView(TextField(featureNum, strSplit[1], false))
-                    "InputValue" -> linearLayout.addView(TextField(featureNum, strSplit[1], true))
-                    "CheckBox" -> linearLayout.addView(
+                    "InputText" -> patches.addView(TextField(featureNum, strSplit[1], false))
+                    "InputValue" -> patches.addView(TextField(featureNum, strSplit[1], true))
+                    "CheckBox" -> patches.addView(
                         CheckBox(
                             featureNum,
                             strSplit[1],
                             switchedOn
                         )
                     )
-                    "RadioButton" -> linearLayout.addView(
+                    "RadioButton" -> patches.addView(
                         RadioButton(
                             featureNum,
                             strSplit[1],
@@ -278,19 +266,19 @@ class BaseView(ctx: Context) : FrameLayout(ctx) {
                     )
                     "ButtonLink" -> {
                         subFeat++
-                        linearLayout.addView(ButtonLink(strSplit[1], strSplit[2]))
+                        patches.addView(ButtonLink(strSplit[1], strSplit[2]))
                     }
                     "Category" -> {
                         subFeat++
-                        linearLayout.addView(Category(strSplit[1]))
+                        patches.addView(Category(strSplit[1]))
                     }
                     "RichTextView" -> {
                         subFeat++
-                        linearLayout.addView(RichTextView(strSplit[1]))
+                        patches.addView(RichTextView(strSplit[1]))
                     }
                     "RichWebView" -> {
                         subFeat++
-                        linearLayout.addView(RichWebView(strSplit[1]))
+                        patches.addView(RichWebView(strSplit[1]))
                     }
                 }
             }
@@ -315,16 +303,16 @@ class BaseView(ctx: Context) : FrameLayout(ctx) {
             switchR.thumbDrawable.setTintList(buttonStates)
             switchR.trackDrawable.setTintList(buttonStates)
         }
-        switchR.isChecked = switchedOn
-        switchR.text = featureName
-        switchR.setTextColor(TEXT_COLOR_2)
-        switchR.setPadding(10, 5, 0, 5)
         switchR.setOnCheckedChangeListener { _, isChecked: Boolean ->
             Changes(
                 featureName,
                 isChecked.toInt(), null
             )
         }
+        switchR.isChecked = switchedOn
+        switchR.text = featureName
+        switchR.setTextColor(TEXT_COLOR_2)
+        switchR.setPadding(10, 5, 0, 5)
         return switchR
     }
 
@@ -614,12 +602,12 @@ class BaseView(ctx: Context) : FrameLayout(ctx) {
         checkBox.setTextColor(TEXT_COLOR_2)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) checkBox.buttonTintList =
             ColorStateList.valueOf(CheckBoxColor)
-        checkBox.isChecked = switchedOn
-        checkBox.setOnCheckedChangeListener { _: CompoundButton?, isChecked: Boolean ->
+        checkBox.setOnCheckedChangeListener { _, isChecked ->
             Changes(
                 featureName, isChecked.toInt(), null
             )
         }
+        checkBox.isChecked = switchedOn
         return checkBox
     }
 

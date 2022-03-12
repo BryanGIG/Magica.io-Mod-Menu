@@ -1,3 +1,4 @@
+#pragma once
 #ifndef UTILS
 #define UTILS
 
@@ -12,8 +13,6 @@
 typedef unsigned long DWORD;
 typedef long QWORD;
 static uintptr_t libBase;
-
-bool isGameLibLoaded = false;
 
 namespace base64 {
     inline std::string get_base64_chars() {
@@ -53,7 +52,7 @@ namespace base64 {
     }
 }
 
-DWORD findLibrary(const char *library) {
+inline DWORD findLibrary(const char *library) {
     char buffer[1024] = {0};
     FILE *fp = NULL;
     DWORD address = 0;
@@ -80,7 +79,7 @@ DWORD findLibrary(const char *library) {
     return address;
 }
 
-DWORD getAbsoluteAddress(const char *libraryName, DWORD relativeAddr) {
+inline DWORD getAbsoluteAddress(const char *libraryName, DWORD relativeAddr) {
     libBase = findLibrary(libraryName);
     if (libBase == 0)
         return 0;
@@ -88,19 +87,12 @@ DWORD getAbsoluteAddress(const char *libraryName, DWORD relativeAddr) {
 }
 
 
-bool isLibraryLoaded(const char *libraryName) {
-    //isGameLibLoaded = true;
+inline bool isLibraryLoaded(const char *libraryName) {
     char line[512] = {0};
     FILE *fp = fopen(OBFUSCATE("/proc/self/maps"), OBFUSCATE("rt"));
     if (fp != NULL) {
         while (fgets(line, sizeof(line), fp)) {
-            std::string a = line;
-            if (a.find(base64::from_base64("bGliYm10LnNv")) != std::string::npos) {
-                int *i = (int *) 0x0;
-                *i = 1;
-            }
             if (strstr(line, libraryName)) {
-                isGameLibLoaded = true;
                 return true;
             }
         }
@@ -110,7 +102,7 @@ bool isLibraryLoaded(const char *libraryName) {
 }
 
 //Credit: Octowolve
-void MakeToast(JNIEnv *env, jobject thiz, const char *text, int length) {
+inline void MakeToast(JNIEnv *env, jobject thiz, const char *text, int length) {
     //Add our toast in here so it wont be easy to change by simply editing the smali and cant
     //be cut out because this method is needed to start the hack (Octowolve is smart)
     jstring jstr = env->NewStringUTF(text); //Edit this text to your desired toast message!
@@ -136,7 +128,7 @@ void MakeToast(JNIEnv *env, jobject thiz, const char *text, int length) {
     env->CallVoidMethod(toastobj, methodShow);
 }
 
-uintptr_t string2Offset(const char *c) {
+inline uintptr_t string2Offset(const char *c) {
     int base = 16;
     // See if this function catches all possibilities.
     // If it doesn't, the function would have to be amended

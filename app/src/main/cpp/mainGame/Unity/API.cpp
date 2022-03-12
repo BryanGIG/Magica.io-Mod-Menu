@@ -5,19 +5,8 @@
 #include "API.h"
 #include <locale>
 #include <codecvt>
+#include <Logger.h>
 
-#ifdef _DEBUG
-#define IL2CPP__TAG "Rewtio"
-#define IL2CPP_LOGI(...) __android_log_print(ANDROID_LOG_INFO,IL2CPP__TAG,__VA_ARGS__)
-#define IL2CPP_LOGD(...) __android_log_print(ANDROID_LOG_DEBUG,IL2CPP__TAG,__VA_ARGS__)
-#define IL2CPP_LOGW(...) __android_log_print(ANDROID_LOG_WARN,IL2CPP__TAG,__VA_ARGS__)
-#define IL2CPP_LOGE(...) __android_log_print(ANDROID_LOG_ERROR,IL2CPP__TAG,__VA_ARGS__)
-#else
-#define IL2CPP_LOGD(...)
-#define IL2CPP_LOGW(...)
-#define IL2CPP_LOGE(...)
-#define IL2CPP_LOGI(...)
-#endif
 namespace {
     const void *(*il2cpp_assembly_get_image)(const void *assembly);
 
@@ -87,7 +76,7 @@ void *getExportFunction(void *handle, const char *name)
         return fn;
     }
 
-    IL2CPP_LOGI("%s: %p %s", __FUNCTION__, handle, name);
+    LOGI("%s: %p %s", __FUNCTION__, handle, name);
     return nullptr;
 }
 
@@ -190,18 +179,18 @@ void *Il2Cpp::GetImageByName(const char *image) {
 void Il2Cpp::GetStaticFieldValue(const char *image, const char *namespaze, const char *clazz, const char *name, void *output) {
     void *img = GetImageByName(image);
     if(!img) {
-        IL2CPP_LOGI("Can't find image %s!", image);
+        LOGI("Can't find image %s!", image);
         return;
     }
     void *klass = GetClassType(image, namespaze, clazz);
     if(!klass) {
-        IL2CPP_LOGI("Can't find class %s for field %s!", clazz, name);
+        LOGI("Can't find class %s for field %s!", clazz, name);
         return;
     }
 
     void *field = il2cpp_class_get_field_from_name(klass, name);
     if(!field) {
-        IL2CPP_LOGI("Can't find field %s in class %s!", name, clazz);
+        LOGI("Can't find field %s in class %s!", name, clazz);
         return;
     }
 
@@ -211,18 +200,18 @@ void Il2Cpp::GetStaticFieldValue(const char *image, const char *namespaze, const
 void Il2Cpp::SetStaticFieldValue(const char *image, const char *namespaze, const char *clazz, const char *name, void* value) {
     void *img = GetImageByName(image);
     if(!img) {
-        IL2CPP_LOGI("Can't find image %s!", image);
+        LOGI("Can't find image %s!", image);
         return;
     }
     void *klass = GetClassType(image, namespaze, clazz);
     if(!klass) {
-        IL2CPP_LOGI("Can't find class %s for field %s!", clazz, name);
+        LOGI("Can't find class %s for field %s!", clazz, name);
         return;
     }
 
     void *field = il2cpp_class_get_field_from_name(klass, name);
     if(!field) {
-        IL2CPP_LOGI("Can't find field %s in class %s!", name, clazz);
+        LOGI("Can't find field %s in class %s!", name, clazz);
         return;
     }
 
@@ -232,13 +221,13 @@ void Il2Cpp::SetStaticFieldValue(const char *image, const char *namespaze, const
 void *Il2Cpp::GetClassType(const char *image, const char *namespaze, const char *clazz) {
     void *img = GetImageByName(image);
     if(!img) {
-        IL2CPP_LOGI("Can't find image %s!", image);
+        LOGI("Can't find image %s!", image);
         return nullptr;
     }
 
     void *klass = il2cpp_class_from_name(img, namespaze, clazz);
     if(!klass) {
-        IL2CPP_LOGI("Can't find class %s!", clazz);
+        LOGI("Can't find class %s!", clazz);
         return nullptr;
     }
     return klass;
@@ -247,20 +236,20 @@ void *Il2Cpp::GetClassType(const char *image, const char *namespaze, const char 
 void *Il2Cpp::CreateClassInstance(const char *image, const char *namespaze, const char *clazz) {
     void *img = GetImageByName(image);
     if(!img) {
-        IL2CPP_LOGI("Can't find image %s!", image);
+        LOGI("Can't find image %s!", image);
         return nullptr;
     }
 
     void *klass = GetClassType(image, namespaze, clazz);
     if(!klass) {
-        IL2CPP_LOGI("Can't find class %s!", clazz);
+        LOGI("Can't find class %s!", clazz);
         return nullptr;
     }
 
     void *obj = il2cpp_object_new(klass);
     if(!obj)
     {
-        IL2CPP_LOGI("Can't create object for %s", clazz);
+        LOGI("Can't create object for %s", clazz);
         return nullptr;
     }
 
@@ -270,19 +259,19 @@ void *Il2Cpp::CreateClassInstance(const char *image, const char *namespaze, cons
 void *Il2Cpp::GetMethodOffset(const char *image, const char *namespaze, const char *clazz, const char *name, int argsCount) {
     void *img = GetImageByName(image);
     if(!img) {
-        IL2CPP_LOGI("Can't find image %s!", image);
+        LOGI("Can't find image %s!", image);
         return nullptr;
     }
 
     void *klass = GetClassType(image, namespaze, clazz);
     if(!klass) {
-        IL2CPP_LOGI("Can't find class %s for method %s!", clazz, name);
+        LOGI("Can't find class %s for method %s!", clazz, name);
         return nullptr;
     }
 
     void **method = (void**)il2cpp_class_get_method_from_name(klass, name, argsCount);
     if(!method) {
-        IL2CPP_LOGI("Can't find method %s in class %s!", name, clazz);
+        LOGI("Can't find method %s in class %s!", name, clazz);
         return nullptr;
     }
 
@@ -292,13 +281,13 @@ void *Il2Cpp::GetMethodOffset(const char *image, const char *namespaze, const ch
 void *Il2Cpp::GetMethodOffset(const char *image, const char *namespaze, const char *clazz, const char *name, char** args, int argsCount) {
     void *img = GetImageByName(image);
     if(!img) {
-        IL2CPP_LOGI("Can't find image %s!", image);
+        LOGI("Can't find image %s!", image);
         return nullptr;
     }
 
     void *klass = GetClassType(image, namespaze, clazz);
     if(!klass) {
-        IL2CPP_LOGI("Can't find class %s for method %s!", clazz, name);
+        LOGI("Can't find class %s for method %s!", clazz, name);
         return nullptr;
     }
 
@@ -317,7 +306,7 @@ void *Il2Cpp::GetMethodOffset(const char *image, const char *namespaze, const ch
                     if (strcmp(tname, args[i]) == 0) {
                         score++;
                     } else {
-                        IL2CPP_LOGI("Argument at index %d didn't matched requested argument!\r\n\tRequested: %s\r\n\tActual: %s\r\nSkipping function...", i, args[i], tname);
+                        LOGI("Argument at index %d didn't matched requested argument!\r\n\tRequested: %s\r\n\tActual: %s\r\nSkipping function...", i, args[i], tname);
                         score = 0;
 goto skip;
                     }
@@ -328,13 +317,13 @@ goto skip;
 
         if(score == argsCount)
         {
-            IL2CPP_LOGI("Found matched function!");
+            LOGI("Found matched function!");
             return *method;
         }
 
         method = (void **) il2cpp_class_get_methods(klass, &iter);
     }
-    IL2CPP_LOGI("Cannot find function %s in class %s!", name, clazz);
+    LOGI("Cannot find function %s in class %s!", name, clazz);
     return nullptr;
 }
 
@@ -345,7 +334,7 @@ const char *Il2Cpp::GetMethodName(void* method){
 uintptr_t Il2Cpp::GetFieldOffset(void *clazz, const char *name){
     void *field = il2cpp_class_get_field_from_name(clazz, name);
     if(!field) {
-        IL2CPP_LOGI("Can't find field %s!", name);
+        LOGI("Can't find field %s!", name);
         return -1;
     }
     return il2cpp_field_get_offset(field);
@@ -354,18 +343,18 @@ uintptr_t Il2Cpp::GetFieldOffset(void *clazz, const char *name){
 size_t Il2Cpp::GetFieldOffset(const char *image, const char *namespaze, const char *clazz, const char *name) {
     void *img = GetImageByName(image);
     if(!img) {
-        IL2CPP_LOGI("Can't find image %s!", image);
+        LOGI("Can't find image %s!", image);
         return -1;
     }
     void *klass = GetClassType(image, namespaze, clazz);
     if(!klass) {
-        IL2CPP_LOGI("Can't find class %s for field %s!", clazz, name);
+        LOGI("Can't find class %s for field %s!", clazz, name);
         return -1;
     }
 
     void *field = il2cpp_class_get_field_from_name(klass, name);
     if(!field) {
-        IL2CPP_LOGI("Can't find field %s in class %s!", name, clazz);
+        LOGI("Can't find field %s in class %s!", name, clazz);
         return -1;
     }
     return il2cpp_field_get_offset(field);
@@ -381,12 +370,12 @@ bool Il2Cpp::IsAssembliesLoaded() {
 void* Il2Cpp::CreateArray(const char *image, const char *namespaze, const char *clazz, size_t length) {
     void *img = GetImageByName(image);
     if(!img) {
-        IL2CPP_LOGI("Can't find image %s!", image);
+        LOGI("Can't find image %s!", image);
         return nullptr;
     }
     void *klass = GetClassType(image, namespaze, clazz);
     if(!klass) {
-        IL2CPP_LOGI("Can't find class %s!", clazz);
+        LOGI("Can't find class %s!", clazz);
         return nullptr;
     }
 

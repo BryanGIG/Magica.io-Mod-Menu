@@ -17,13 +17,14 @@ class ESPView(context: Context?) : View(context, null, 0), Runnable {
     var mThread: Thread
     var FPS = 60
     var sleepTime: Long
+
     external fun DrawOn(canvas: Canvas?)
 
     init {
         InitializePaints()
         isFocusableInTouchMode = false
         setBackgroundColor(Color.TRANSPARENT)
-        sleepTime = (1000 / FPS).toLong()
+        sleepTime = 1000L / FPS
         mThread = Thread(this)
         mThread.start()
     }
@@ -73,7 +74,6 @@ class ESPView(context: Context?) : View(context, null, 0), Runnable {
     fun ClearCanvas(cvs: Canvas) {
         cvs.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR)
     }
-
     fun DrawLine(
         cvs: Canvas,
         a: Int,

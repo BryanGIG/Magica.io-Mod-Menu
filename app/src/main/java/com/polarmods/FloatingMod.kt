@@ -8,7 +8,9 @@ import android.graphics.PixelFormat
 import android.os.Build
 import android.os.Handler
 import android.os.IBinder
+import android.os.Looper
 import android.view.*
+import java.util.*
 
 @SuppressLint("ClickableViewAccessibility")
 class FloatingMod : Service() {
@@ -16,6 +18,7 @@ class FloatingMod : Service() {
     private lateinit var params: WindowManager.LayoutParams
     lateinit var mWindowManager: WindowManager
     private lateinit var rootFrame: View
+    private val mHandler = Handler(Looper.getMainLooper())
     var esp: ESPView? = null
 
     override fun onBind(intent: Intent): IBinder? {
@@ -31,13 +34,11 @@ class FloatingMod : Service() {
     override fun onCreate() {
         super.onCreate()
         initBase()
-        val handler = Handler(mainLooper)
-        handler.post(object : Runnable {
+        Timer().scheduleAtFixedRate(object : TimerTask() {
             override fun run() {
                 thread()
-                handler.postDelayed(this, 2000)
             }
-        })
+        }, 0, 1000)
     }
 
     @Suppress("DEPRECATION")
@@ -45,6 +46,7 @@ class FloatingMod : Service() {
         //Floating View
         view = BaseView(this)
         rootFrame = view.rootView
+
         rootFrame.setOnTouchListener(onTouchListener())
         view.startimage.setOnTouchListener(onTouchListener())
 
@@ -74,21 +76,23 @@ class FloatingMod : Service() {
         mWindowManager.addView(rootFrame, params)
 
         //ESP View
-        esp = ESPView(this)
-        val params2 = WindowManager.LayoutParams(
-            WindowManager.LayoutParams.MATCH_PARENT,
-            WindowManager.LayoutParams.MATCH_PARENT, 0, navigationBarHeight(),
-            layoutType,
-            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
-                    or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or WindowManager.LayoutParams.FLAG_FULLSCREEN,
-            PixelFormat.TRANSLUCENT
-        )
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P)
-            params2.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT
-        params2.gravity = Gravity.TOP or Gravity.START
-        params2.x = 0
-        params2.y = 0
-        mWindowManager.addView(esp, params2)
+//        esp = ESPView(this)
+//        val params2 = WindowManager.LayoutParams(
+//            WindowManager.LayoutParams.MATCH_PARENT,
+//            WindowManager.LayoutParams.MATCH_PARENT, 0, navigationBarHeight(),
+//            layoutType,
+//            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+//                    or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or WindowManager.LayoutParams.FLAG_FULLSCREEN,
+//            PixelFormat.TRANSLUCENT
+//        )
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P)
+//            params2.layoutInDisplayCutoutMode =
+//                WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
+//
+//        params2.gravity = Gravity.TOP or Gravity.START
+//        params2.x = 0
+//        params2.y = 0
+//        mWindowManager.addView(esp, params2)
     }
 
     private fun navigationBarHeight(): Int {
@@ -107,13 +111,18 @@ class FloatingMod : Service() {
 
     private fun thread() {
         if (isNotInGame) {
-            rootFrame.visibility = View.INVISIBLE
-            esp!!.visibility = View.INVISIBLE
+            mHandler.post {
+                rootFrame.visibility = View.INVISIBLE
+                esp?.visibility = View.INVISIBLE
+            }
         } else {
-            rootFrame.visibility = View.VISIBLE
-            esp!!.visibility = View.VISIBLE
+            mHandler.post {
+                rootFrame.visibility = View.VISIBLE
+                esp?.visibility = View.VISIBLE
+            }
         }
     }
+
 
     private fun onTouchListener(): View.OnTouchListener {
         return object : View.OnTouchListener {
@@ -155,6 +164,11 @@ class FloatingMod : Service() {
 
     private val isViewCollapsed: Boolean
         get() = view.mCollapsed.visibility == View.VISIBLE
+
+    override fun onDestroy() {
+        mWindowManager.removeView(rootFrame)
+        esp?.let { mWindowManager.removeView(it) }
+    }
 
     companion object {
         init {

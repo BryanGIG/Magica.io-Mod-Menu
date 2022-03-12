@@ -14,4 +14,6 @@
 #include "Camera.hpp"
 #include "GameCore.hpp"
 #include "Character.hpp"
-#include "Analytics.hpp"
+#include "PlayerData.hpp"
+#include "PlayerBalance.hpp"
+#include "BaseCharStatus.hpp"

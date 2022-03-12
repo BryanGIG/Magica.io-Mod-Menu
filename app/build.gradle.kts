@@ -1,3 +1,5 @@
+import java.io.ByteArrayOutputStream
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -5,7 +7,7 @@ plugins {
 
 android {
     namespace = "com.polarmods"
-    compileSdk = 32
+    compileSdk = 30
 
     defaultConfig {
         applicationId = "com.polarmods"
@@ -15,14 +17,7 @@ android {
         versionCode = 1
         versionName = "1.0"
         ndk {
-            abiFilters.addAll(arrayOf("armeabi-v7a","arm64-v8a"))
-        }
-    }
-
-    buildTypes {
-        getByName("release") {
-            isMinifyEnabled = true
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            abiFilters.addAll(arrayOf("arm64-v8a"))
         }
     }
 
@@ -37,12 +32,21 @@ android {
         targetCompatibility = JavaVersion.VERSION_1_8
     }
 
-    kotlinOptions {
-        jvmTarget = "1.8"
-    }
-    buildFeatures.prefab = true
+    kotlinOptions.jvmTarget = "1.8"
 }
 
-dependencies {
-    implementation("io.github.vvb2060.ndk:dobby:1.2")
+afterEvaluate {
+    android.applicationVariants.forEach { variant ->
+        val variantCapped = variant.name.capitalize()
+        val variantLowered = variant.name.toLowerCase()
+        val buildTypeLowered = variant.buildType.name.toLowerCase()
+
+        task<Exec>("push${variantCapped}") {
+            dependsOn("assemble$variantCapped")
+            workingDir = file("build/outputs/apk/${variantLowered}/")
+            commandLine = mutableListOf(android.adbExecutable.path, "push", "app-${buildTypeLowered}.apk", "/sdcard/MT2/apks/")
+        }
+
+        variant.assembleProvider.get().finalizedBy("push${variantCapped}")
+    }
 }
